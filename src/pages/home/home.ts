@@ -17,7 +17,7 @@ export class HomePage {
     prices:[],
     stats:{}
   };
-  notify:any[]=[];
+  notify:any={};
   originalData:any={};
   constructor(public navCtrl: NavController,
               private dataService: MyDataService,
@@ -49,7 +49,7 @@ export class HomePage {
       inputs: [
         {
           name: 'title',
-          placeholder: 'asdasd'
+          placeholder: ticker.val
         },
       ],
       buttons: [
@@ -64,12 +64,16 @@ export class HomePage {
           handler: data => {
             console.log(data);
             console.log('Saved clicked');
-            this.notify.push({ticker:true});
-            console.log(this.notify);
+            ticker.notify = data.title;
+            this.saveNotification(ticker);
           }
         }
       ]
     });
     prompt.present();
+  }
+
+  saveNotification(ticker){
+    console.log(ticker);
   }
 }
