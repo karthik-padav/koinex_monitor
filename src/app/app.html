@@ -7,9 +7,13 @@
 
   <ion-content>
     <ion-list>
-      <button menuClose ion-item *ngFor="let p of pages" (click)="openPage(p)">
-        {{p.title}}
-      </button>
+      <ion-item>
+      <ion-avatar item-start>
+        <img src='./assets/imgs/BCH.png'>
+      </ion-avatar>
+         <ion-label>BCH</ion-label>
+        <ion-toggle [(ngModel)]="BCH" checked="false" (ionChange)="Change_Toggle();"></ion-toggle>
+      </ion-item>
     </ion-list>
   </ion-content>
 

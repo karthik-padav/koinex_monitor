@@ -9,14 +9,108 @@
 
 <ion-content padding>
   <ion-list>
-    <ion-item *ngFor="let ticker of ticker.prices">
+    <ion-item *ngIf="ticker.prices.BCH">
       <ion-avatar item-start>
-        <img src='./assets/imgs/{{ticker.name}}.png'>
+        <img src='./assets/imgs/BCH.png'>
       </ion-avatar>
-      <h2>{{ticker.name}}/INR</h2>
-      <h3>{{ticker.val | number:'.2-2'}} &#8377;</h3>
-      <p>Notify me at </p>
-      <button ion-button clear item-end (click)="showPrompt(ticker)">View</button>
+      <ion-label>
+        <h2>BCH/INR</h2>
+        <h3>{{ticker.prices.BCH | number:'.2-2'}} &#8377;</h3>
+        <p *ngIf = "BCHnotify.notifyVal">Notify me at {{BCHnotify.notifyVal}}</p>
+      </ion-label>
+      <button ion-button clear item-end (click)="showPrompt('BCH', ticker.prices.BCH)">Edit</button>
+        <ion-toggle [(ngModel)]="BCHnotify.notified" checked="false"  (ionChange)="Change_Toggle('BCH', BCHnotify.notified);"></ion-toggle>
+    </ion-item>
+
+    <ion-item *ngIf="ticker.prices.BTC">
+      <ion-avatar item-start>
+        <img src='./assets/imgs/BTC.png'>
+      </ion-avatar>
+      <ion-label>
+      <h2>BTC/INR</h2>
+      <h3>{{ticker.prices.BTC | number:'.2-2'}} &#8377;</h3>
+      <p *ngIf = "BTCnotify.notifyVal">Notify me at {{BTCnotify.notifyVal}}</p>
+      </ion-label>
+      <button ion-button clear item-end (click)="showPrompt('BTC', ticker.prices.BTC)">Edit</button>
+        <ion-toggle [(ngModel)]="BTCnotify.notified" checked="false" (ionChange)="Change_Toggle('BTC', BTCnotify.notified);"></ion-toggle>
+    </ion-item>
+
+    <ion-item *ngIf="ticker.prices.ETH">
+      <ion-avatar item-start>
+        <img src='./assets/imgs/ETH.png'>
+      </ion-avatar>
+      <ion-label>
+      <h2>ETH/INR</h2>
+      <h3>{{ticker.prices.ETH | number:'.2-2'}} &#8377;</h3>
+      <p *ngIf = "ETHnotify.notifyVal">Notify me at {{ETHnotify.notifyVal}}</p>
+      </ion-label>
+      <button ion-button clear item-end (click)="showPrompt('ETH', ticker.prices.ETH)">Edit</button>
+        <ion-toggle [(ngModel)]="ETHnotify.notified" checked="false" (ionChange)="Change_Toggle('ETH', ETHnotify.notified);"></ion-toggle>
+    </ion-item>
+
+    <ion-item *ngIf="ticker.prices.GNT">
+      <ion-avatar item-start>
+        <img src='./assets/imgs/GNT.png'>
+      </ion-avatar>
+      <ion-label>
+      <h2>GNT/INR</h2>
+      <h3>{{ticker.prices.GNT | number:'.2-2'}} &#8377;</h3>
+      <p *ngIf = "GNTnotify.notifyVal">Notify me at {{GNTnotify.notifyVal}}</p>
+      </ion-label>
+      <button ion-button clear item-end (click)="showPrompt('GNT', ticker.prices.GNT)">Edit</button>
+        <ion-toggle [(ngModel)]="GNTnotify.notified" checked="false" (ionChange)="Change_Toggle('GNT', GNTnotify.notified);"></ion-toggle>
+    </ion-item>
+
+    <ion-item *ngIf="ticker.prices.LTC">
+      <ion-avatar item-start>
+        <img src='./assets/imgs/LTC.png'>
+      </ion-avatar>
+      <ion-label>
+      <h2>LTC/INR</h2>
+      <h3>{{ticker.prices.LTC | number:'.2-2'}} &#8377;</h3>
+      <p *ngIf = "LTCnotify.notifyVal">Notify me at {{LTCnotify.notifyVal}}</p>
+      </ion-label>
+      <button ion-button clear item-end (click)="showPrompt('LTC', ticker.prices.LTC)">Edit</button>
+        <ion-toggle [(ngModel)]="LTCnotify.notified" checked="false" (ionChange)="Change_Toggle('LTC', LTCnotify.notified, ticker.prices.LTC);"></ion-toggle>
+    </ion-item>
+
+    <ion-item *ngIf="ticker.prices.MIOTA">
+      <ion-avatar item-start>
+        <img src='./assets/imgs/MIOTA.png'>
+      </ion-avatar>
+      <ion-label>
+      <h2>MIOTA/INR</h2>
+      <h3>{{ticker.prices.MIOTA | number:'.2-2'}} &#8377;</h3>
+      <p *ngIf = "MIOTAnotify.notifyVal">Notify me at {{MIOTAnotify.notifyVal}}</p>
+      </ion-label>
+      <button ion-button clear item-end (click)="showPrompt('MIOTA', ticker.prices.MIOTA)">Edit</button>
+        <ion-toggle [(ngModel)]="MIOTAnotify.notified" checked="false" (ionChange)="Change_Toggle('MIOTA', MIOTAnotify.notified);"></ion-toggle>
+    </ion-item>
+
+    <ion-item *ngIf="ticker.prices.OMG">
+      <ion-avatar item-start>
+        <img src='./assets/imgs/OMG.png'>
+      </ion-avatar>
+      <ion-label>
+      <h2>OMG/INR</h2>
+      <h3>{{ticker.prices.OMG | number:'.2-2'}} &#8377;</h3>
+      <p *ngIf = "OMGnotify.notifyVal">Notify me at {{OMGnotify.notifyVal}}</p>
+      </ion-label>
+      <button ion-button clear item-end (click)="showPrompt('OMG', ticker.prices.OMG)">Edit</button>
+        <ion-toggle [(ngModel)]="OMGnotify.notified" checked="false" (ionChange)="Change_Toggle('OMG', OMGnotify.notified);"></ion-toggle>
+    </ion-item>
+    
+    <ion-item *ngIf="ticker.prices.XRP">
+      <ion-avatar item-start>
+        <img src='./assets/imgs/XRP.png'>
+      </ion-avatar>
+      <ion-label>
+      <h2>XRP/INR</h2>
+      <h3>{{ticker.prices.XRP | number:'.2-2'}} &#8377;</h3>
+      <p *ngIf = "XRPnotify.notifyVal">Notify me at {{XRPnotify.notifyVal}}</p>
+      </ion-label>
+      <button ion-button clear item-end (click)="showPrompt('XRP', ticker.prices.XRP)">Edit</button>
+        <ion-toggle [(ngModel)]="XRPnotify.notified" checked="false" (ionChange)="Change_Toggle('XRP', XRPnotify.notified);"></ion-toggle>
     </ion-item>
   </ion-list>
 
