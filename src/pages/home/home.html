@@ -13,10 +13,13 @@
       <ion-avatar item-start>
         <img src='./assets/imgs/{{ticker.name}}.png'>
       </ion-avatar>
-      <h2>{{ticker.name}}/INR</h2>
-      <h3>{{ticker.val | number:'.2-2'}} &#8377;</h3>
-      <p>Notify me at </p>
-      <button ion-button clear item-end (click)="showPrompt(ticker)">View</button>
+      <ion-label>
+        <h2>{{ticker.name}}/INR</h2>
+        <h3>{{ticker.val | number:'.2-2'}} &#8377;</h3>
+        <p *ngIf="ticker.notifyVal">Notify me at {{ticker.notifyVal}}</p>
+      </ion-label>
+      <button ion-button clear item-end (click)="showPrompt(ticker)">Edit</button>
+      <ion-toggle [(ngModel)]="ticker.notified" checked="false"  (ionChange)="notifyData(ticker);"></ion-toggle>
     </ion-item>
   </ion-list>
 
