@@ -13,6 +13,8 @@ import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 
 import { IonicStorageModule } from '@ionic/storage';
+import { AdMobFree } from '@ionic-native/admob-free';  
+import { Network } from '@ionic-native/network';
 
 @NgModule({
   declarations: [
@@ -36,6 +38,8 @@ import { IonicStorageModule } from '@ionic/storage';
     StatusBar,
     SplashScreen,
     MyDataService,
+    AdMobFree,
+    Network,
     {provide: ErrorHandler, useClass: IonicErrorHandler}
   ]
 })

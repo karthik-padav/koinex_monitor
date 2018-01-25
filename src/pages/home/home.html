@@ -1,27 +1,42 @@
-<ion-header>
+<ion-header no-borde>
   <ion-navbar>
     <button ion-button menuToggle>
       <ion-icon name="menu"></ion-icon>
     </button>
     <ion-title>Home</ion-title>
+    <ion-buttons end *ngIf="apiCall">
+      <div class="loading-spinner">
+        <ion-spinner class="spinner spinner-md spinner-crescent spinner-md-crescent" ng-reflect-name="crescent">
+          <svg viewBox="0 0 64 64" style="animation-duration: 750ms;">
+            <circle transform="translate(32,32)" r="26">
+            </circle>
+          </svg>
+        </ion-spinner>
+      </div>
+    </ion-buttons>
   </ion-navbar>
 </ion-header>
 
-<ion-content padding>
+<ion-content padding-top padding-right padding-bottom>
   <ion-list>
-    <ion-item *ngFor="let ticker of ticker.prices">
-      <ion-avatar item-start>
-        <img src='./assets/imgs/{{ticker.name}}.png'>
-      </ion-avatar>
-      <ion-label>
-        <h2>{{ticker.name}}/INR</h2>
-        <h3>{{ticker.val | number:'.2-2'}} &#8377;</h3>
-        <p *ngIf="ticker.notifyVal">Notify me at {{ticker.notifyVal}}</p>
-      </ion-label>
-      <button ion-button clear item-end (click)="showPrompt(ticker)">Edit</button>
-      <ion-toggle [(ngModel)]="ticker.notified" checked="false"  (ionChange)="notifyData(ticker);"></ion-toggle>
-    </ion-item>
+    <ion-item-sliding *ngFor="let ticker of ticker.prices">
+      <ion-item>
+        <ion-avatar item-start>
+          <img src='./assets/imgs/{{ticker.name}}.png'>
+        </ion-avatar>
+        <ion-label>
+          <h2>{{ticker.name}}/INR</h2>
+          <h3>{{ticker.val | number:'.2-2'}} &#8377;</h3>
+          <p *ngIf="ticker.notifyVal">Notify me at {{ticker.notifyVal | number:'.2-2'}}</p>
+        </ion-label>
+        <ion-toggle [(ngModel)]="ticker.notified" checked="false" (ionChange)="notifyData(ticker);"></ion-toggle>
+      </ion-item>
+      <ion-item-options side="left">
+        <!-- <button ion-button (click)="favorite(item)">Favorite</button> -->
+        <button ion-button clear item-end (click)="showPrompt(ticker)">Edit</button>
+      </ion-item-options>
+    </ion-item-sliding>
   </ion-list>
 
-  <button ion-button secondary menuToggle>Toggle Menu</button>
+  <!-- <button ion-button secondary menuToggle>Toggle Menu</button> -->
 </ion-content>

@@ -14,3 +14,55 @@
 // To declare rules for a specific mode, create a child rule
 // for the .md, .ios, or .wp mode classes. The mode class is
 // automatically applied to the <body> element in the app.
+.toolbar-background {
+    border-color: #FE3562;
+    background: #FE3562;
+}
+.toolbar-title,
+.bar-button-default {
+    color: #fff;
+}
+.toggle.toggle-checked .toggle-icon {
+    background-color: #fe356252;
+}
+.toggle.toggle-checked .toggle-inner {
+    background-color: #FE3562;
+}
+.item-md p {
+    color: #E7A07F;
+}
+.item-md h3 {
+    color: #9C9495;
+}
+.list ion-item-options {
+    border-bottom: 1px solid #FE3562;
+    background-color: #FE3562;
+}
+.list .item-block .item-inner {
+    border-bottom: 1px solid #FE3562;
+}
+.button-clear{
+    color: #ffffff;
+}
+.app-v {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    bottom: 0;
+    color: #fe3562;
+    font-weight: bold;
+}
+.alert-head .alert-title {
+    color: #fe3562;
+}
+.alert-wrapper .alert-message {
+    color: #9C9495;
+}
+.alert-md .alert-input,
+.alert-md .alert-input:focus {
+    border-bottom: 1px solid #fe3562;
+    // color: #fe3562;
+}
+.alert-wrapper .alert-button {
+    color: #fe3562;
+}

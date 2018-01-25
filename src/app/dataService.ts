@@ -8,8 +8,8 @@ export class MyDataService {
   constructor(private http: Http) { }
 
   getTicker(){
-    // return this.http.get('https://koinex.in/api/ticker')
-    return this.http.get('./assets/data/data.json')
+    return this.http.get('https://koinex.in/api/ticker')
+    // return this.http.get('./assets/data/data.json')
     .map(response => response.json())
   }
 
