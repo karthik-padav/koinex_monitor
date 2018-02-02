@@ -1,9 +1,11 @@
-<ion-header no-borde>
+<ion-header no-border>
   <ion-navbar>
     <button ion-button menuToggle>
       <ion-icon name="menu"></ion-icon>
     </button>
-    <ion-title>Home</ion-title>
+    <ion-title>
+      Koinex
+    </ion-title>
     <ion-buttons end *ngIf="apiCall">
       <div class="loading-spinner">
         <ion-spinner class="spinner spinner-md spinner-crescent spinner-md-crescent" ng-reflect-name="crescent">
@@ -37,6 +39,4 @@
       </ion-item-options>
     </ion-item-sliding>
   </ion-list>
-
-  <!-- <button ion-button secondary menuToggle>Toggle Menu</button> -->
 </ion-content>

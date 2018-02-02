@@ -1,5 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
-import { Nav, ToastController, Platform } from 'ionic-angular';
+import { Nav, ToastController, Platform, LoadingController } from 'ionic-angular';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 
@@ -17,6 +17,7 @@ export class MyApp {
 
   rootPage: any = HomePage;
   isOnline:boolean;
+  loading:any;
 
   pages: Array<{title: string, component: any}>;
 
@@ -25,6 +26,7 @@ export class MyApp {
               public splashScreen: SplashScreen,
               private toastCtrl: ToastController,
               private admobFree: AdMobFree,
+              public loadingCtrl: LoadingController,
               private network: Network) {
     this.initializeApp();
 
@@ -42,34 +44,45 @@ export class MyApp {
       // Here you can do any higher level native things you might need.
       this.statusBar.styleDefault();
       this.splashScreen.hide();
-      // this.showAdmobBannerAds();
-      this.checkInternet();
-
-    });
-  }
-
-  // Internet check
-  checkInternet(){
-    // Internet check
-    console.log('Checking for internet');
-      let disconnectSub = this.network.onDisconnect().subscribe(() => {
-        this.presentToast('you are offline');
-        console.log('network was disconnected :-(');
-        this.isOnline = false;
-      });
+      this.showAdmobBannerAds();
       
-      let connectSub = this.network.onConnect().subscribe(()=> {
-        this.presentToast('you are online');
-        console.log('network connected :-)');
-        this.isOnline = true;
+      // stop disconnect watch
+      this.network.onDisconnect().subscribe(() => {
+        // this.presentToast('network was disconnected :-(');
+        this.presentLoadingDefault('Waiting for Network...');
       });
-      console.log(this.isOnline);
+      // watch network for a connection
+      this.network.onConnect().subscribe(() => {
+        if (this.loading) {
+          this.loading.dismiss();
+        }
+        this.presentToast('Network connected!');
+        setTimeout(() => {
+          if (this.network.type === 'wifi') {
+            this.presentToast('We got a wifi connection, woohoo!');
+          }
+        }, 3000);
+      });
+
+      // Confirm exit
+      let lastTimeBackPress = 0;
+      let timePeriodToExit  = 2000;
+      this.platform.registerBackButtonAction(() => {
+        if (new Date().getTime() - lastTimeBackPress < timePeriodToExit) {
+          this.platform.exitApp(); //Exit from app
+      } else {
+          this.presentToast('Press back again to exit App?');
+          lastTimeBackPress = new Date().getTime();
+      }
+      })
+    });
   }
 
   // Show add
   showAdmobBannerAds(){
     const bannerConfig: AdMobFreeBannerConfig = {
-        isTesting: true,
+        id: 'ca-app-pub-4098169854204453/1220464988',
+        isTesting: false,
         autoShow: true
     };
     this.admobFree.banner.config(bannerConfig);
@@ -78,7 +91,6 @@ export class MyApp {
     .then(() => {
         // banner Ad is ready
         // if we set autoShow to false, then we will need to call the show method here
-        this.presentToast('Banner is ready');
     })
     .catch(e => {console.log(e),this.presentToast(e)});    
     }      
@@ -97,5 +109,14 @@ export class MyApp {
     });
 
     toast.present();
+  }
+  
+  presentLoadingDefault(msg) {
+    if (!this.loading) {
+      this.loading = this.loadingCtrl.create({
+        content: msg
+      });
+      this.loading.present();
+    }
   }
 }

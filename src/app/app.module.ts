@@ -15,6 +15,8 @@ import { SplashScreen } from '@ionic-native/splash-screen';
 import { IonicStorageModule } from '@ionic/storage';
 import { AdMobFree } from '@ionic-native/admob-free';  
 import { Network } from '@ionic-native/network';
+import { Push } from '@ionic-native/push';
+import { LocalNotifications } from '@ionic-native/local-notifications';
 
 @NgModule({
   declarations: [
@@ -39,6 +41,8 @@ import { Network } from '@ionic-native/network';
     SplashScreen,
     MyDataService,
     AdMobFree,
+    Push,
+    LocalNotifications,
     Network,
     {provide: ErrorHandler, useClass: IonicErrorHandler}
   ]

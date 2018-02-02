@@ -1,19 +1,21 @@
 import { Component } from '@angular/core';
 import { NavController } from 'ionic-angular';
-import { ToastController, AlertController, LoadingController } from 'ionic-angular';
+import { ToastController, Platform, AlertController, LoadingController } from 'ionic-angular';
+// import { Push } from '@ionic-native/push';
 
 // import { Http } from '@angular/http';
 // import 'rxjs/add/operator/map';
 
 import { MyDataService } from '../../app/dataService';
 import { Storage } from '@ionic/storage';
+import { LocalNotifications } from '@ionic-native/local-notifications';
 
 @Component({
   selector: 'page-home',
   templateUrl: 'home.html'
 })
 export class HomePage {
-
+  sentNotification: any = {};
   ticker: any = {
     prices: [],
     stats: {}
@@ -21,98 +23,70 @@ export class HomePage {
   notify: any = {};
   notified: any;
   notifyVal: any;
+  dataSetInterval:any;
   loading: any;
   originalData: any = {};
+  appInBackground: boolean;
   apiCall: boolean = false;
   constructor(public navCtrl: NavController,
     private dataService: MyDataService,
     public alertCtrl: AlertController,
+    public platform: Platform,
     private toastCtrl: ToastController,
     public loadingCtrl: LoadingController,
+    private localNotifications: LocalNotifications,
     private storage: Storage) {
-    this.init();
-    this.refreshData();
-  }
+    if(this.dataSetInterval){
+      clearInterval(this.dataSetInterval);
+    }
+    this.getData();
+    this.dataSetInterval = setInterval(() => {
+      this.getData();
+    }, 30000);
 
-  refreshData() {
-    this.presentLoadingDefault();
-    setInterval(() => {
-      this.apiCall = true;
-      this.dataService.getTicker().subscribe((data) => {
-        console.log(data);
-        if (data) {
-          this.ticker = {
-            prices: [],
-            stats: {}
-          };
-          this.originalData = data;
-          let temp = (<any>Object).entries(data.prices);
-          console.log(temp);
-          this.ticker.stats = data.stats;
-          for (let i = 0; i < temp.length; i++) {
-            let name = temp[i][0];
-            let val = temp[i][1];
-            this.storage.get(name).then((notify) => {
-              // console.log(notify);
-              if (notify) {
-                this.notified = notify.notify;
-                this.notifyVal = notify.val;
-                this.ticker.prices.push({ 'name': name, 'val': val, 'notified': this.notified, notifyVal: this.notifyVal });
-                if (((Math.round(this.ticker.prices[i].val) == Math.round(this.ticker.prices[i].notifyVal) + 1)
-                  ||
-                  (Math.round(this.ticker.prices[i].val) == Math.round(this.ticker.prices[i].notifyVal) - 1))
-                  &&
-                  this.ticker.prices[i].notified) {
-                    this.presentToast(this.ticker.prices[i].name + ' Close Match found');
-                } else if ((Math.round(this.ticker.prices[i].val) == Math.round(this.ticker.prices[i].notifyVal)) && this.ticker.prices[i].notified) {
-                  this.presentToast(this.ticker.prices[i].name + ' Match found');
-                }
-              } else {
-                this.notified = false;
-                this.ticker.prices.push({ 'name': name, 'val': val, 'notified': this.notified, notifyVal: null });
-              }
-            });
-          }
-          console.log(this.ticker);
-          this.apiCall = false;
-          if (this.loading) {
-            this.loading.dismiss();
-          }
-        }
+    this.platform.ready().then(() => {
+      this.localNotifications.on('click', (notification, state) => {
+        let json = JSON.parse(notification.data);
+        this.presentToast(json.myData);
+      })
+
+      this.platform.pause.subscribe(() => {
+        this.appInBackground = true;
       });
-    }, 30000)
+    })
   }
 
-  init() {
-    this.presentLoadingDefault();
+  getData() {
+    if(this.ticker.prices.length == 0){
+      this.presentLoadingDefault();
+    }
     this.dataService.getTicker().subscribe((data) => {
-      console.log(data);
       if (data) {
         this.originalData = data;
         let temp = (<any>Object).entries(data.prices);
-        console.log(temp);
         this.ticker.stats = data.stats;
         for (let i = 0; i < temp.length; i++) {
           let name = temp[i][0];
           let val = temp[i][1];
           this.storage.get(name).then((notify) => {
-            console.log(notify);
             if (notify) {
               this.notified = notify.notify;
               this.notifyVal = notify.val;
-              this.ticker.prices.push({ 'name': name, 'val': val, 'notified': this.notified, notifyVal: this.notifyVal });
+              this.ticker.prices[i] = { 'id': i + 1, 'name': name, 'val': val, 'notified': this.notified, notifyVal: this.notifyVal };
               if (((Math.round(this.ticker.prices[i].val) == Math.round(this.ticker.prices[i].notifyVal) + 1)
                 ||
                 (Math.round(this.ticker.prices[i].val) == Math.round(this.ticker.prices[i].notifyVal) - 1))
                 &&
                 this.ticker.prices[i].notified) {
-                  this.presentToast(this.ticker.prices[i].name + ' Close Match found');
+                // this.presentToast(this.ticker.prices[i].name + ' Close Match found');
+                this.scheduleLocationNotification(this.ticker.prices[i], this.ticker.prices[i].name + ' Close Match found');
               } else if ((Math.round(this.ticker.prices[i].val) == Math.round(this.ticker.prices[i].notifyVal)) && this.ticker.prices[i].notified) {
-                this.presentToast(this.ticker.prices[i].name + ' Match found');
+                // this.presentToast(this.ticker.prices[i].name + ' Match found');
+                this.scheduleLocationNotification(this.ticker.prices[i], this.ticker.prices[i].name + ' Match found');
               }
             } else {
               this.notified = false;
-              this.ticker.prices.push({ 'name': name, 'val': val, 'notified': this.notified, notifyVal: null });
+              this.ticker.prices[i] = { 'id': i + 1, 'name': name, 'val': val, 'notified': this.notified, notifyVal: null };
             }
           });
         }
@@ -126,17 +100,13 @@ export class HomePage {
   }
 
   notifyMatchCheck() {
-    console.log('notify match check');
-    console.log(this.ticker);
     for (let temp = 0; temp < this.ticker.prices.length; temp++) {
       // if(this.ticker.prices[temp].notifyVal){}
       this.ticker.prices[temp] = ~~this.ticker.prices[temp];
-      console.log(this.ticker.prices[temp])
     }
   }
 
   notifyData(ticker) {
-    console.log(ticker);
     let notifyData = {
       'notify': ticker.notified,
       'val': ticker.notifyVal
@@ -145,7 +115,6 @@ export class HomePage {
   }
 
   showPrompt(ticker) {
-    console.log(ticker);
     let prompt = this.alertCtrl.create({
       title: 'Notify me',
       message: "Enter value to be notified",
@@ -161,18 +130,14 @@ export class HomePage {
         {
           text: 'Cancel',
           handler: data => {
-            console.log('Cancel clicked');
           }
         },
         {
           text: 'Save',
           handler: data => {
-            console.log(data);
-            console.log((data.title).match(/^\d+$/));
             if (data.title) {
               ticker.notifyVal = data.title;
               this.saveNotification(ticker);
-              console.log('Saved clicked');
             } else {
               this.presentToast('Enter value to be notified');
               return false;
@@ -185,9 +150,7 @@ export class HomePage {
   }
 
   saveNotification(ticker) {
-    console.log(ticker);
     this.storage.get(ticker.name).then((notify) => {
-      console.log(notify);
       if (notify) {
         let notifyData = {
           'notify': notify.notify,
@@ -205,13 +168,15 @@ export class HomePage {
   }
 
   presentToast(msg) {
-    let toast = this.toastCtrl.create({
-      message: msg,
-      duration: 3000,
-      position: 'bottom'
-    });
-
-    toast.present();
+    // if(!this.appInBackground){
+      let toast = this.toastCtrl.create({
+        message: msg,
+        duration: 3000,
+        position: 'bottom'
+      });
+  
+      toast.present();
+    // }
   }
 
   presentLoadingDefault() {
@@ -221,5 +186,17 @@ export class HomePage {
       });
       this.loading.present();
     }
+  }
+
+  scheduleLocationNotification(data, msg){
+    // Schedule a single notification
+    this.presentToast('Notification');
+    this.localNotifications.schedule({
+      id: 1,
+      text: msg,
+      sound: 'res://platform_default',
+      icon: 'file://assets/img/logo.png',
+      data: { myData: 'Disable ' + data.name + ' to stop notification' }
+    });
   }
 }
