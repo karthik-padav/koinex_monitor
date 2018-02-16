@@ -33,7 +33,7 @@ export class MyApp {
     // used for an example of ngFor and navigation
     this.pages = [
       { title: 'Home', component: HomePage },
-      { title: 'List', component: ListPage }
+      { title: 'About', component: ListPage }
     ];
 
   }
@@ -45,12 +45,16 @@ export class MyApp {
       this.statusBar.styleDefault();
       this.splashScreen.hide();
       this.showAdmobBannerAds();
+      // setInterval(() => {
+        this.showAdmobBannerAds();
+      // }, 30000);
       
       // stop disconnect watch
       this.network.onDisconnect().subscribe(() => {
         // this.presentToast('network was disconnected :-(');
         this.presentLoadingDefault('Waiting for Network...');
       });
+
       // watch network for a connection
       this.network.onConnect().subscribe(() => {
         if (this.loading) {

@@ -9,7 +9,6 @@ export class MyDataService {
 
   getTicker(){
     return this.http.get('https://koinex.in/api/ticker')
-    // return this.http.get('./assets/data/data.json')
     .map(response => response.json())
   }
 

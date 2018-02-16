@@ -20,10 +20,11 @@ export class HomePage {
     prices: [],
     stats: {}
   };
+  localStorageData: any;
   notify: any = {};
   notified: any;
   notifyVal: any;
-  dataSetInterval:any;
+  dataSetInterval: any;
   loading: any;
   originalData: any = {};
   appInBackground: boolean;
@@ -36,8 +37,9 @@ export class HomePage {
     public loadingCtrl: LoadingController,
     private localNotifications: LocalNotifications,
     private storage: Storage) {
-    if(this.dataSetInterval){
+    if (this.dataSetInterval) {
       clearInterval(this.dataSetInterval);
+      console.log('setInterval cleared');
     }
     this.getData();
     this.dataSetInterval = setInterval(() => {
@@ -47,7 +49,16 @@ export class HomePage {
     this.platform.ready().then(() => {
       this.localNotifications.on('click', (notification, state) => {
         let json = JSON.parse(notification.data);
-        this.presentToast(json.myData);
+        let toast = this.toastCtrl.create({
+          message: 'Notification shows up for every 30 seconds',
+          // duration: 3000,
+          dismissOnPageChange: true,
+          showCloseButton: true,
+          closeButtonText: "Ok",
+          position: 'bottom'
+        });
+
+        toast.present();
       })
 
       this.platform.pause.subscribe(() => {
@@ -57,61 +68,72 @@ export class HomePage {
   }
 
   getData() {
-    if(this.ticker.prices.length == 0){
+    this.apiCall = true;
+    if (this.ticker.prices.length == 0) {
       this.presentLoadingDefault();
     }
     this.dataService.getTicker().subscribe((data) => {
       if (data) {
+        this.apiCall = false;
         this.originalData = data;
         let temp = (<any>Object).entries(data.prices);
         this.ticker.stats = data.stats;
-        for (let i = 0; i < temp.length; i++) {
-          let name = temp[i][0];
-          let val = temp[i][1];
-          this.storage.get(name).then((notify) => {
-            if (notify) {
-              this.notified = notify.notify;
-              this.notifyVal = notify.val;
-              this.ticker.prices[i] = { 'id': i + 1, 'name': name, 'val': val, 'notified': this.notified, notifyVal: this.notifyVal };
-              if (((Math.round(this.ticker.prices[i].val) == Math.round(this.ticker.prices[i].notifyVal) + 1)
-                ||
-                (Math.round(this.ticker.prices[i].val) == Math.round(this.ticker.prices[i].notifyVal) - 1))
-                &&
-                this.ticker.prices[i].notified) {
-                // this.presentToast(this.ticker.prices[i].name + ' Close Match found');
-                this.scheduleLocationNotification(this.ticker.prices[i], this.ticker.prices[i].name + ' Close Match found');
-              } else if ((Math.round(this.ticker.prices[i].val) == Math.round(this.ticker.prices[i].notifyVal)) && this.ticker.prices[i].notified) {
-                // this.presentToast(this.ticker.prices[i].name + ' Match found');
-                this.scheduleLocationNotification(this.ticker.prices[i], this.ticker.prices[i].name + ' Match found');
-              }
-            } else {
-              this.notified = false;
-              this.ticker.prices[i] = { 'id': i + 1, 'name': name, 'val': val, 'notified': this.notified, notifyVal: null };
+        let count = 0
+        this.storage.get('ticker').then((data) => {
+          this.localStorageData = data;
+          for (let i = 0; i < temp.length; i++) {
+            count++;
+            let data = {
+              'id': i + 1,
+              'name': temp[i][0],
+              'val': temp[i][1],
+              'notified': this.localStorageData ? this.localStorageData.prices[i].notified : null,
+              'notifyVal': this.localStorageData ? this.localStorageData.prices[i].notifyVal : null
+            };
+            this.ticker.prices[i] = data;
+            if (count == temp.length) {
+              this.storage.set('ticker', this.ticker);
             }
-          });
-        }
-        console.log(this.ticker);
-        this.notifyMatchCheck();
+            this.notifyMatchCheck(data);
+          }
+        })
         if (this.loading) {
           this.loading.dismiss();
         }
       }
-    });
+    }, (err) => {
+      console.log('Api Error');
+      if (this.loading) {
+        this.loading.dismiss();
+      }
+      this.storage.get('ticker').then((localStorageData) => {
+        if (localStorageData) {
+          this.ticker = localStorageData;
+        } else {
+          this.presentLoadingDefault();
+        }
+      });
+    })
   }
 
-  notifyMatchCheck() {
-    for (let temp = 0; temp < this.ticker.prices.length; temp++) {
-      // if(this.ticker.prices[temp].notifyVal){}
-      this.ticker.prices[temp] = ~~this.ticker.prices[temp];
+  notifyMatchCheck(data) {
+    if (((Math.round(data.val) == Math.round(data.notifyVal) + 1)
+      ||
+      (Math.round(data.val) == Math.round(data.notifyVal) - 1))
+      &&
+      data.notified) {
+      this.scheduleLocalNotification(data, data.name + ' Close Match found');
+    } else if ((Math.round(data.val) == Math.round(data.notifyVal)) && data.notified) {
+      this.scheduleLocalNotification(data, data.name + ' Match found');
     }
   }
 
   notifyData(ticker) {
-    let notifyData = {
-      'notify': ticker.notified,
-      'val': ticker.notifyVal
-    }
-    this.storage.set(ticker.name, notifyData);
+    this.storage.get('ticker').then((localStorageData) => {
+      localStorageData.prices[ticker.id - 1] = ticker;
+      this.ticker.prices[ticker.id - 1] = ticker;
+      this.storage.set('ticker', localStorageData);
+    });
   }
 
   showPrompt(ticker) {
@@ -137,7 +159,12 @@ export class HomePage {
           handler: data => {
             if (data.title) {
               ticker.notifyVal = data.title;
-              this.saveNotification(ticker);
+              ticker.notified = true;
+              this.storage.get('ticker').then((localStorageData) => {
+                localStorageData.prices[ticker.id - 1] = ticker;
+                this.ticker.prices[ticker.id - 1] = ticker;
+                this.storage.set('ticker', localStorageData);
+              });
             } else {
               this.presentToast('Enter value to be notified');
               return false;
@@ -149,34 +176,16 @@ export class HomePage {
     prompt.present();
   }
 
-  saveNotification(ticker) {
-    this.storage.get(ticker.name).then((notify) => {
-      if (notify) {
-        let notifyData = {
-          'notify': notify.notify,
-          'val': ticker.notifyVal
-        }
-        this.storage.set(ticker.name, notifyData);
-      } else {
-        let notifyData = {
-          'notify': false,
-          'val': ticker.notifyVal
-        }
-        this.storage.set(ticker.name, notifyData);
-      }
-    });
-  }
-
   presentToast(msg) {
-    // if(!this.appInBackground){
+    if (!this.appInBackground) {
       let toast = this.toastCtrl.create({
         message: msg,
         duration: 3000,
         position: 'bottom'
       });
-  
+
       toast.present();
-    // }
+    }
   }
 
   presentLoadingDefault() {
@@ -188,14 +197,14 @@ export class HomePage {
     }
   }
 
-  scheduleLocationNotification(data, msg){
+  scheduleLocalNotification(data, msg) {
     // Schedule a single notification
-    this.presentToast('Notification');
     this.localNotifications.schedule({
       id: 1,
       text: msg,
       sound: 'res://platform_default',
-      icon: 'file://assets/img/logo.png',
+      smallIcon: 'res://logo',
+      icon: 'file://assets/imgs/icon.png',
       data: { myData: 'Disable ' + data.name + ' to stop notification' }
     });
   }
